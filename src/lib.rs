@@ -1621,6 +1621,10 @@ impl EGraph {
     pub(crate) fn type_info_mut(&mut self) -> &mut TypeInfo {
         &mut self.type_info
     }
+
+    pub fn rulesets_symbols(&self) -> Vec<Symbol> {
+        self.rulesets.clone().into_keys().collect()
+    }
 }
 
 // Currently, only the following errors can thrown without location information:
