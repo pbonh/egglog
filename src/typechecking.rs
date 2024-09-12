@@ -39,6 +39,7 @@ impl Default for TypeInfo {
         res.add_sort(StringSort::new("String".into()), DUMMY_SPAN.clone());
         res.add_sort(BoolSort::new("bool".into()), DUMMY_SPAN.clone());
         res.add_sort(I64Sort::new("i64".into()), DUMMY_SPAN.clone());
+        res.add_sort(U64Sort::new("u64".into()), DUMMY_SPAN.clone());
         res.add_sort(F64Sort::new("f64".into()), DUMMY_SPAN.clone());
         res.add_sort(RationalSort::new("Rational".into()), DUMMY_SPAN.clone());
 
@@ -67,6 +68,7 @@ impl TypeInfo {
     pub(crate) fn infer_literal(&self, lit: &Literal) -> ArcSort {
         match lit {
             Literal::Int(_) => self.sorts.get(&Symbol::from("i64")),
+            Literal::UInt(_) => self.sorts.get(&Symbol::from("u64")),
             Literal::F64(_) => self.sorts.get(&Symbol::from("f64")),
             Literal::String(_) => self.sorts.get(&Symbol::from("String")),
             Literal::Bool(_) => self.sorts.get(&Symbol::from("bool")),

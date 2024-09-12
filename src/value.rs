@@ -49,6 +49,15 @@ impl From<i64> for Value {
     }
 }
 
+impl From<u64> for Value {
+    fn from(u: u64) -> Self {
+        Self {
+            tag: Symbol::from("u64"),
+            bits: u,
+        }
+    }
+}
+
 impl From<OrderedFloat<f64>> for Value {
     fn from(f: OrderedFloat<f64>) -> Self {
         Self {

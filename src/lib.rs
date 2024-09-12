@@ -727,6 +727,7 @@ impl EGraph {
     pub fn eval_lit(&self, lit: &Literal) -> Value {
         match lit {
             Literal::Int(i) => i.store(&self.type_info().get_sort_nofail()).unwrap(),
+            Literal::UInt(u) => u.store(&self.type_info().get_sort_nofail()).unwrap(),
             Literal::F64(f) => f.store(&self.type_info().get_sort_nofail()).unwrap(),
             Literal::String(s) => s.store(&self.type_info().get_sort_nofail()).unwrap(),
             Literal::Unit => ().store(&self.type_info().get_sort_nofail()).unwrap(),
@@ -1621,10 +1622,6 @@ impl EGraph {
     pub(crate) fn type_info_mut(&mut self) -> &mut TypeInfo {
         &mut self.type_info
     }
-
-    pub fn rulesets_symbols(&self) -> Vec<Symbol> {
-        self.rulesets.clone().into_keys().collect()
-    }
 }
 
 // Currently, only the following errors can thrown without location information:
@@ -1667,7 +1664,7 @@ mod tests {
 
     use crate::{
         constraint::SimpleTypeConstraint,
-        sort::{FromSort, I64Sort, IntoSort, Sort, VecSort},
+        sort::{FromSort, I64Sort, U64Sort, IntoSort, Sort, VecSort},
         EGraph, PrimitiveLike, Span, Value,
     };
 
@@ -1708,6 +1705,43 @@ mod tests {
         }
     }
 
+    struct UInnerProduct {
+        ele: Arc<U64Sort>,
+        vec: Arc<VecSort>,
+    }
+
+    impl PrimitiveLike for UInnerProduct {
+        fn name(&self) -> symbol_table::GlobalSymbol {
+            "uinner-product".into()
+        }
+
+        fn get_type_constraints(&self, span: &Span) -> Box<dyn crate::constraint::TypeConstraint> {
+            SimpleTypeConstraint::new(
+                self.name(),
+                vec![self.vec.clone(), self.vec.clone(), self.ele.clone()],
+                span.clone(),
+            )
+            .into_box()
+        }
+
+        fn apply(
+            &self,
+            values: &[crate::Value],
+            _egraph: Option<&mut EGraph>,
+        ) -> Option<crate::Value> {
+            let mut sum = 0;
+            let vec1 = Vec::<Value>::load(&self.vec, &values[0]);
+            let vec2 = Vec::<Value>::load(&self.vec, &values[1]);
+            assert_eq!(vec1.len(), vec2.len());
+            for (a, b) in vec1.iter().zip(vec2.iter()) {
+                let a = u64::load(&self.ele, a);
+                let b = u64::load(&self.ele, b);
+                sum += a * b;
+            }
+            sum.store(&self.ele)
+        }
+    }
+
     #[test]
     fn test_user_defined_primitive() {
         let mut egraph = EGraph::default();
@@ -1734,6 +1768,37 @@ mod tests {
                 (let a (vec-of 1 2 3 4 5 6))
                 (let b (vec-of 6 5 4 3 2 1))
                 (check (= (inner-product a b) 56))
+            ",
+            )
+            .unwrap();
+    }
+
+    #[test]
+    fn test_user_defined_primitive_u64() {
+        let mut egraph = EGraph::default();
+        egraph
+            .parse_and_run_program(
+                None,
+                "
+                (sort UIntVec (Vec u64))
+            ",
+            )
+            .unwrap();
+        let u64_sort: Arc<U64Sort> = egraph.get_sort().unwrap();
+        let uint_vec_sort: Arc<VecSort> = egraph
+            .get_sort_by(|s: &Arc<VecSort>| s.element_name() == u64_sort.name())
+            .unwrap();
+        egraph.add_primitive(UInnerProduct {
+            ele: u64_sort,
+            vec: uint_vec_sort,
+        });
+        egraph
+            .parse_and_run_program(
+                None,
+                "
+                (let a (vec-of _1 _2 _3 _4 _5 _6))
+                (let b (vec-of _6 _5 _4 _3 _2 _1))
+                (check (= (uinner-product a b) _56))
             ",
             )
             .unwrap();

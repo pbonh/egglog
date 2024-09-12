@@ -12,6 +12,8 @@ mod string;
 pub use string::*;
 mod unit;
 pub use unit::*;
+mod u64;
+pub use self::u64::*;
 mod i64;
 pub use self::i64::*;
 mod f64;

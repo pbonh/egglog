@@ -8,6 +8,7 @@ use super::ToSexp;
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
 pub enum Literal {
     Int(i64),
+    UInt(u64),
     F64(OrderedFloat<f64>),
     String(Symbol),
     Bool(bool),
@@ -42,6 +43,7 @@ impl Display for Literal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self {
             Literal::Int(i) => Display::fmt(i, f),
+            Literal::UInt(u) => Display::fmt(u, f),
             Literal::F64(n) => {
                 // need to display with decimal if there is none
                 let str = n.to_string();
