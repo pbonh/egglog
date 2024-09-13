@@ -36,6 +36,7 @@ macro_rules! impl_from {
 }
 
 impl_from!(Int(i64));
+impl_from!(UInt(u64));
 impl_from!(F64(OrderedFloat<f64>));
 impl_from!(String(Symbol));
 

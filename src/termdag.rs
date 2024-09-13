@@ -261,7 +261,7 @@ mod tests {
         let (mut td, t) = parse_term(s);
         let x = td.var("x".into());
         let y = td.var("y".into());
-        let seven = td.lit(7.into());
+        let seven = td.lit(7_i64.into());
         let g = td.app("g".into(), vec![x.clone(), y.clone()]);
         let t2 = td.app("f".into(), vec![g.clone(), x, seven, g]);
         assert_eq!(t, t2);

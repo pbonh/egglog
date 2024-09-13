@@ -6,7 +6,7 @@ use egglog::*;
 fn test_termdag_public() {
     let mut td = TermDag::default();
     let x = td.var("x".into());
-    let seven = td.lit(7.into());
+    let seven = td.lit(7_i64.into());
     let f = td.app("f".into(), vec![x, seven]);
     assert_eq!(td.to_string(&f), "(f x 7)");
 }
